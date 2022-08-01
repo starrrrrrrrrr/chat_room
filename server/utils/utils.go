@@ -13,21 +13,21 @@ type Transfer struct {
 	Buf  [8096]byte
 }
 
-func (this *Transfer) ReadPkg() (mes message.Message, err error) {
+func (tf *Transfer) ReadPkg() (mes message.Message, err error) {
 	fmt.Println("读取数据...")
-	_, err = this.Conn.Read(this.Buf[0:4])
+	_, err = tf.Conn.Read(tf.Buf[0:4])
 	if err != nil {
 		fmt.Println("conn.Read err=", err)
 		return
 	}
-	pkgLen := binary.BigEndian.Uint32(this.Buf[0:4])
-	n, err := this.Conn.Read(this.Buf[0:pkgLen])
+	pkgLen := binary.BigEndian.Uint32(tf.Buf[0:4])
+	n, err := tf.Conn.Read(tf.Buf[0:pkgLen])
 	if n != int(pkgLen) || err != nil {
 		fmt.Println("conn.Read err=", err)
 		return
 	}
 
-	err = json.Unmarshal(this.Buf[0:pkgLen], &mes)
+	err = json.Unmarshal(tf.Buf[0:pkgLen], &mes)
 	if err != nil {
 		fmt.Println("json.Unmarshal err=", err)
 		return
@@ -36,16 +36,16 @@ func (this *Transfer) ReadPkg() (mes message.Message, err error) {
 	return
 }
 
-func (this *Transfer) WritePkg(data []byte) (err error) {
+func (tf *Transfer) WritePkg(data []byte) (err error) {
 	pkgLen := uint32(len(data))
-	binary.BigEndian.PutUint32(this.Buf[:4], pkgLen)
-	n, err := this.Conn.Write(this.Buf[0:4])
+	binary.BigEndian.PutUint32(tf.Buf[:4], pkgLen)
+	n, err := tf.Conn.Write(tf.Buf[0:4])
 	if n != 4 || err != nil {
 		fmt.Println("conn.Write err=", err)
 		return
 	}
 
-	n, err = this.Conn.Write(data)
+	n, err = tf.Conn.Write(data)
 	if n != int(pkgLen) || err != nil {
 		fmt.Println("conn.Write err=", err)
 		return
